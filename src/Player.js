@@ -15,16 +15,16 @@ class Player {
     this.lastUpdate = new Date().getTime();
   }
 
-  //help for this function from stackoverflow
-  //https://stackoverflow.com/questions/1484506/random-color-generator
+  // help for this function from stackoverflow
+  // https://stackoverflow.com/questions/1484506/random-color-generator
   generateRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
+    this.letters = '0123456789ABCDEF';
+    this.newColor = '#';
     for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random()*16)];
+      this.newColor += this.letters[Math.floor(Math.random() * 16)];
     }
 
-    return color;
+    return this.newColor;
   }
 }
 

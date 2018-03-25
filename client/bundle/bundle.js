@@ -189,7 +189,7 @@ const displayCanvas = () => {
 
 //handle keyboard input from the user
 const updatePosition = socket => {
-  currUser = users[user];
+  const currUser = users[user];
 
   currUser.prevX = currUser.x;
   currUser.prevY = currUser.prevY;
