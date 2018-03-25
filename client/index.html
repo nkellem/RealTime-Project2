@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Project 2</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./bundle/bundle.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+  </head>
+  <body>
+    <div id="joinRoom">
+      <form action="/" method="post">
+        <label for="roomName">Room Name</label>
+        <input id="roomName" name="roomName" type="text" value="" />
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" value="" />
+        <input type="submit" id="roomJoin" />
+      </form>
+    </div>
+    <canvas id="canvas" width="700" height="600"></canvas>
+  </body>
+</html>
