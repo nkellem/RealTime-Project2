@@ -1,22 +1,29 @@
+// creates our Player object and holds all our important properties
 class Player {
-  constructor(name) {
+  constructor(name, rad) {
     this.name = name;
-    this.x = 50;
-    this.y = 50;
-    this.prevX = 50;
-    this.prevY = 50;
-    this.destX = 50;
-    this.destY = 50;
-    this.radius = 50;
+    this.angle = this.generateRandomAngle();
+    this.x = this.generateRandomPoint(true, rad, this.angle);
+    this.y = this.generateRandomPoint(false, rad, this.angle);
+    this.prevX = this.x;
+    this.prevY = this.y;
+    this.destX = this.x;
+    this.destY = this.y;
+    this.radius = 25;
     this.startAngle = 0;
     this.endAngle = 2 * Math.PI;
     this.alpha = 0;
     this.color = this.generateRandomColor();
     this.lastUpdate = new Date().getTime();
+    this.alive = true;
+    this.lives = 3;
+    this.damageable = true;
+    this.immuneTimer = 0;
   }
 
   // help for this function from stackoverflow
   // https://stackoverflow.com/questions/1484506/random-color-generator
+  // generates a random color for our player to be drawn in
   generateRandomColor() {
     this.letters = '0123456789ABCDEF';
     this.newColor = '#';
@@ -25,6 +32,20 @@ class Player {
     }
 
     return this.newColor;
+  }
+
+  // help for this function from stackoverflow
+  // https://stackoverflow.com/questions/9879258/how-can-i-generate-random-points-on-a-circles-circumference-in-javascript
+  // generates a random spawn coordinate
+  generateRandomPoint(isX, rad, angle) {
+    if (isX) {
+      return Math.abs(Math.cos(angle) * rad) + rad;
+    }
+    return Math.abs(Math.sin(angle) * rad) + rad;
+  }
+  // generates a random angle from the "Safe zone" ring
+  generateRandomAngle() {
+    return Math.random() * Math.PI * 2;
   }
 }
 

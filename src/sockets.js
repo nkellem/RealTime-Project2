@@ -3,8 +3,7 @@ const Player = require('./Player.js');
 // io server instance
 let io;
 
-// TODO: need to delegate physics calculations to a host and have them hold the user info
-
+// lets the host know that it is the host
 const confirmHost = (sock) => {
   const socket = sock;
 
@@ -40,7 +39,6 @@ const designateHost = (sock) => {
       if (socketUser.isHost) {
         // set the host socket reference as this socket's hostSocket (custom property)
         socket.hostSocket = socketUser;
-        // TODO: call the host socket and let them know a new character has joined
         socket.hostSocket.emit('hostAcknowledge', { Player: socket.Player });
         console.log(`Host for ${socket.belongsTo} is ${socket.hostSocket.name}`);
         hostFound = true; // flag we did find a host (in case host left)
@@ -61,12 +59,13 @@ const onJoined = (sock) => {
     socket.join(data.room);
     socket.name = data.user;
     socket.belongsTo = data.room;
-    socket.Player = new Player(socket.name);
+    socket.Player = new Player(socket.name, data.radius);
     console.log(`User ${data.user} just joined room ${data.room}`);
     designateHost(socket);
   });
 };
 
+// route a client movement uopdate back to the host
 const onMovementUpdate = (sock) => {
   const socket = sock;
 
@@ -76,7 +75,18 @@ const onMovementUpdate = (sock) => {
   });
 };
 
-// host events
+// route a bomb update from client to host
+const onDroppedBomb = (sock) => {
+  const socket = sock;
+
+  socket.on('droppedBomb', (data) => {
+    console.log('client dropped bomb');
+    socket.hostSocket.emit('clientDroppedBomb', data);
+  });
+};
+
+// host events (routed from host to client)
+// updates clients' users objects when a new player joins
 const onHostSendUsers = (sock) => {
   const socket = sock;
 
@@ -85,11 +95,76 @@ const onHostSendUsers = (sock) => {
   });
 };
 
+// lets the client know what the current ring size is
+const onHostSendRingSize = (sock) => {
+  const socket = sock;
+
+  socket.on('hostSendRingSize', (data) => {
+    socket.hostSocket.broadcast.emit('hostSendRingSize', data);
+  });
+};
+
+// lets clients know the host player has updated its position
 const onHostUpdatedMovement = (sock) => {
   const socket = sock;
 
   socket.on('hostUpdatedMovement', (data) => {
     socket.hostSocket.broadcast.emit('hostUpdatedMovement', data);
+  });
+};
+
+// tells clients to decrease their ring size
+const onHostUpdateRingSize = (sock) => {
+  const socket = sock;
+
+  socket.on('hostUpdateRingSize', () => {
+    socket.hostSocket.broadcast.emit('hostUpdateRingSize');
+  });
+};
+
+// tells clients when a user has died
+const onHostSendUserDied = (sock) => {
+  const socket = sock;
+
+  socket.on('hostSendUserDied', (data) => {
+    socket.hostSocket.broadcast.emit('hostSendUserDied', data);
+  });
+};
+
+// updates the clients' bombs list
+const onHostUpdateBombs = (sock) => {
+  const socket = sock;
+
+  socket.on('hostUpdateBombs', (data) => {
+    socket.hostSocket.broadcast.emit('hostUpdateBombs', data);
+  });
+};
+
+// lets the client know when a bomb should explode
+const onHostTriggerExplosion = (sock) => {
+  const socket = sock;
+
+  socket.on('hostTriggerExplosion', (data) => {
+    console.log('host triggered explosion');
+    socket.hostSocket.broadcast.emit('hostTriggerExplosion', data);
+  });
+};
+
+// lets clients know when a player has been hit
+const onHostUserHitByBomb = (sock) => {
+  const socket = sock;
+
+  socket.on('hostUserHitByBomb', (data) => {
+    socket.hostSocket.broadcast.emit('hostUserHitByBomb', data);
+  });
+};
+
+// tells the clients to reset a user
+const onHostResetUser = (sock) => {
+  const socket = sock;
+
+  socket.on('hostResetUser', (data) => {
+    socket.hostSocket.broadcast.emit('hostResetUser', data);
   });
 };
 
@@ -102,9 +177,17 @@ const setupSockets = (ioServer) => {
     const socket = sock;
 
     onJoined(socket);
+    onHostSendRingSize(socket);
+    onDroppedBomb(socket);
     onHostSendUsers(socket);
     onHostUpdatedMovement(socket);
     onMovementUpdate(socket);
+    onHostUpdateRingSize(socket);
+    onHostSendUserDied(socket);
+    onHostUpdateBombs(socket);
+    onHostTriggerExplosion(socket);
+    onHostUserHitByBomb(socket);
+    onHostResetUser(socket);
   });
 };
 

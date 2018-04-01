@@ -1,5 +1,8 @@
 'use strict';
+//keep track of how many times the ring has been decreased
+let timesRingDecreased = 0;
 
+//update the player's position
 const updateUser = data => {
   if (users[data.name].lastUpdate >= data.lastUpdate) {
     return;
@@ -34,6 +37,7 @@ const movementUpdate = (data, socket) => {
   socket.emit('hostUpdatedMovement', currUser);
 };
 
+//when the player has picked a room, show the canvas
 const displayCanvas = () => {
   document.querySelector('#joinRoom').style.display =  'none';
   document.querySelector('#canvas').style.display = 'block';
@@ -43,35 +47,66 @@ const displayCanvas = () => {
 const updatePosition = socket => {
   const currUser = users[user];
 
-  currUser.prevX = currUser.x;
-  currUser.prevY = currUser.prevY;
-
   //set up keydown event
   window.addEventListener('keydown', e => {
-    if (e.keyCode === 37 && currUser.destX > 0) {
-      currUser.destX -= 2;
-    }
+    if (users[user].alive) {
+      currUser.prevX = currUser.x;
+      currUser.prevY = currUser.y;
 
-    if (e.keyCode === 39 && currUser.destX < cWidth) {
-      currUser.destX += 2;
-    }
+      if (keyDown['KEY_LEFT'] && currUser.destX > 0) {
+        currUser.destX -= 5;
+      }
 
-    if (e.keyCode === 38 && currUser.destY > 0) {
-      currUser.destY -= 2;
-    }
+      if (keyDown['KEY_RIGHT'] && currUser.destX < cWidth) {
+        currUser.destX += 5;
+      }
 
-    if (e.keyCode === 40 && currUser.destY < cHeight) {
-      currUser.destY += 2;
-    }
+      if (keyDown['KEY_UP'] && currUser.destY > 0) {
+        currUser.destY -= 5;
+      }
 
-    //reset the user's alpha so they are always smoothly animating
-    currUser.alpha = 0.05;
+      if (keyDown['KEY_DOWN'] && currUser.destY < cHeight) {
+        currUser.destY += 5;
+      }
 
-    if (isHost) {
-      currUser.lastUpdate = new Date().getTime();
-      socket.emit('hostUpdatedMovement', currUser);
-    } else {
-      socket.emit('movementUpdate', currUser);
+      //reset the user's alpha so they are always smoothly animating
+      currUser.alpha = 0.05;
+
+      if (isHost) {
+        currUser.lastUpdate = new Date().getTime();
+        socket.emit('hostUpdatedMovement', currUser);
+      } else {
+        socket.emit('movementUpdate', currUser);
+      }
     }
   });
+
+  window.addEventListener('keyup', e => {
+    if (e.keyCode === myKeys['KEY_SPACEBAR']) {
+      if (users[user].alive) {
+        const bomb = {
+          x: currUser.x,
+          y: currUser.y,
+          timer: 0,
+          owner: user,
+          exploding: false,
+        }
+
+        if (isHost) {
+          socket.emit('hostUpdateBombs', bomb);
+          bombs.push(bomb);
+        } else {
+          socket.emit('droppedBomb', bomb);
+        }
+      }
+    }
+  });
+};
+
+//decrease our ring size
+const decreaseRingSize = () => {
+  if (timesRingDecreased < 15) {
+    timesRingDecreased++;
+    ring.radius -= 15;
+  }
 };

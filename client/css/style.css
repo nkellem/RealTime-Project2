@@ -21,4 +21,9 @@ form {
 #canvas {
   display: none;
   border: 1px solid black;
+  margin: 0 auto;
+}
+
+h1, h2, h3 {
+  text-align: center;
 }
