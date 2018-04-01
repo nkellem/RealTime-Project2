@@ -2,9 +2,9 @@
 class Player {
   constructor(name, rad) {
     this.name = name;
-    this.angle = this.generateRandomAngle();
-    this.x = this.generateRandomPoint(true, rad, this.angle);
-    this.y = this.generateRandomPoint(false, rad, this.angle);
+    this.angle = Player.generateRandomAngle();
+    this.x = Player.generateRandomPoint(true, rad, this.angle);
+    this.y = Player.generateRandomPoint(false, rad, this.angle);
     this.prevX = this.x;
     this.prevY = this.y;
     this.destX = this.x;
@@ -37,14 +37,14 @@ class Player {
   // help for this function from stackoverflow
   // https://stackoverflow.com/questions/9879258/how-can-i-generate-random-points-on-a-circles-circumference-in-javascript
   // generates a random spawn coordinate
-  generateRandomPoint(isX, rad, angle) {
+  static generateRandomPoint(isX, rad, angle) {
     if (isX) {
       return Math.abs(Math.cos(angle) * rad) + rad;
     }
     return Math.abs(Math.sin(angle) * rad) + rad;
   }
   // generates a random angle from the "Safe zone" ring
-  generateRandomAngle() {
+  static generateRandomAngle() {
     return Math.random() * Math.PI * 2;
   }
 }
